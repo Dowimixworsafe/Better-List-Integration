@@ -139,12 +139,28 @@ public class PartyManager {
         broadcastToParty(partyId, "betterlist:sync", json);
     }
 
-    /** Sends an error message to a specific player. */
-    public void sendError(Player player, String message) {
+    /** Sends a red error message to a specific player (rendered + translated by the mod). */
+    public void sendError(Player player, String msgKey, String arg, String fallback) {
+        sendServerMessage(player, "PARTY_ERROR", msgKey, arg, fallback);
+    }
+
+    /** Sends a green notice message to a specific player (rendered + translated by the mod). */
+    public void sendNotice(Player player, String msgKey, String arg, String fallback) {
+        sendServerMessage(player, "PARTY_NOTICE", msgKey, arg, fallback);
+    }
+
+    /**
+     * Sends a server-originated chat message to the mod. The mod looks up {@code msgKey}
+     * (with optional {@code arg}) in its lang files; {@code message} is a plain-English
+     * fallback for older mod versions that don't understand {@code msgKey}.
+     */
+    private void sendServerMessage(Player player, String type, String msgKey, String arg, String fallback) {
         if (player == null || !player.isOnline()) return;
         JsonObject json = new JsonObject();
-        json.addProperty("type", "PARTY_ERROR");
-        json.addProperty("message", message);
+        json.addProperty("type", type);
+        json.addProperty("msgKey", msgKey);
+        if (arg != null) json.addProperty("arg", arg);
+        json.addProperty("message", fallback);
         sendPacket(player, "betterlist:sync", json);
     }
 
