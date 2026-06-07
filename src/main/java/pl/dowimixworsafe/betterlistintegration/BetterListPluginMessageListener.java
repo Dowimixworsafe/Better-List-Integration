@@ -60,7 +60,9 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
                 return;
             }
 
-            if (type.toUpperCase().startsWith("PARTY_")) {
+            if ("PARTY_TARGET_UPDATE".equalsIgnoreCase(type)) {
+                handleSyncPacket(player, json);
+            } else if (type.toUpperCase().startsWith("PARTY_")) {
                 handlePartyPacket(player, type.toLowerCase(), json);
             } else {
                 handleSyncPacket(player, json);
@@ -118,30 +120,35 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
         Player targetPlayer = Bukkit.getPlayerExact(targetNick);
 
         if (targetPlayer == null) {
-            partyManager.sendError(sender, "That player is not online!");
+            partyManager.sendError(sender, "bml.party.err.not_online", targetNick,
+                    "Player " + targetNick + " is not online.");
             return;
         }
 
         if (targetPlayer.getUniqueId().equals(sender.getUniqueId())) {
-            partyManager.sendError(sender, "You can't invite yourself.");
+            partyManager.sendError(sender, "bml.party.err.cant_invite_self", null,
+                    "You can't invite yourself.");
             return;
         }
 
         if (partyManager.isPlayerInAnyParty(targetPlayer.getUniqueId())) {
-            partyManager.sendError(sender, "That player is already in another party!");
+            partyManager.sendError(sender, "bml.party.err.target_in_party", targetPlayer.getName(),
+                    "Player " + targetPlayer.getName() + " is already in another party.");
             return;
         }
 
         if (!partyManager.partyExists(partyId)) {
             // New party: the sender must not already belong to another party.
             if (partyManager.isPlayerInAnyParty(sender.getUniqueId())) {
-                partyManager.sendError(sender, "You already belong to another party.");
+                partyManager.sendError(sender, "bml.party.err.you_in_party", null,
+                        "You already belong to another party.");
                 return;
             }
             partyManager.createParty(partyId, sender.getUniqueId());
             partyManager.broadcastPartyUpdate(partyId);
         } else if (!partyManager.isLeader(partyId, sender.getUniqueId())) {
-            partyManager.sendError(sender, "Only the party leader can invite!");
+            partyManager.sendError(sender, "bml.party.err.only_leader_invite", null,
+                    "Only the party leader can invite.");
             return;
         }
 
@@ -154,7 +161,8 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
         invitePkt.addProperty("fromNick", sender.getName());
 
         partyManager.sendPacket(targetPlayer, "betterlist:sync", invitePkt);
-        sender.sendMessage("§a[BetterList] Invite sent to " + targetPlayer.getName());
+        partyManager.sendNotice(sender, "bml.party.notice.invite_sent", targetPlayer.getName(),
+                "Invite sent to " + targetPlayer.getName() + ".");
     }
 
     private void handleAccept(Player acceptingPlayer, JsonObject json) {
@@ -162,18 +170,21 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
         if (partyId == null) return;
 
         if (!partyManager.partyExists(partyId)) {
-            partyManager.sendError(acceptingPlayer, "That party no longer exists!");
+            partyManager.sendError(acceptingPlayer, "bml.party.err.party_gone", null,
+                    "That party no longer exists.");
             return;
         }
 
         // A player may only accept a party they were actually invited to.
         if (!partyManager.hasInvite(partyId, acceptingPlayer.getUniqueId())) {
-            partyManager.sendError(acceptingPlayer, "You have no pending invite to that party.");
+            partyManager.sendError(acceptingPlayer, "bml.party.err.no_invite", null,
+                    "You have no pending invite to that party.");
             return;
         }
 
         if (partyManager.isPlayerInAnyParty(acceptingPlayer.getUniqueId())) {
-            partyManager.sendError(acceptingPlayer, "Leave your current party first!");
+            partyManager.sendError(acceptingPlayer, "bml.party.err.leave_first", null,
+                    "Leave your current party first.");
             return;
         }
 
@@ -208,7 +219,8 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
         Player targetPlayer = Bukkit.getPlayerExact(targetNick);
 
         if (!partyManager.isLeader(partyId, sender.getUniqueId())) {
-            partyManager.sendError(sender, "Only the party leader can kick players!");
+            partyManager.sendError(sender, "bml.party.err.only_leader_kick", null,
+                    "Only the party leader can kick players.");
             return;
         }
 
@@ -219,11 +231,13 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
             kickPkt.addProperty("type", "PARTY_LEAVE");
             kickPkt.addProperty("partyId", partyId.toString());
             partyManager.sendPacket(targetPlayer, "betterlist:sync", kickPkt);
-            targetPlayer.sendMessage("§c[BetterList] You were kicked from the party.");
+            partyManager.sendError(targetPlayer, "bml.party.notice.kicked", null,
+                    "You were kicked from the party.");
 
             partyManager.broadcastPartyUpdate(partyId);
         } else {
-            partyManager.sendError(sender, "That player is not in your party!");
+            partyManager.sendError(sender, "bml.party.err.not_in_your_party", null,
+                    "That player is not in your party.");
         }
     }
 
