@@ -28,7 +28,9 @@ The jar is produced in `target/` (shaded). Drop it into your server's `plugins/`
 ## Compatibility
 
 - **Paper** (recommended), **Purpur**, **Spigot**, and their forks/hybrids that expose the Bukkit API.
-- Built against `paper-api` for Minecraft 26.1.2+.
+- Built against `paper-api` for Minecraft 26.1.2+, and verified running unchanged on a Minecraft **26.2** Paper server.
+
+One jar covers every supported game version. `api-version` in `plugin.yml` is a *minimum* declaration and the `paper-api` dependency is an open range, so a newer server accepts it — and since the plugin only uses Bukkit's plugin-messaging API and never parses the payloads it forwards, there is nothing version-specific for a game update to break.
 
 ## License
 
