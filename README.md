@@ -28,7 +28,7 @@ The jar is produced in `target/` (shaded). Drop it into your server's `plugins/`
 ## Compatibility
 
 - **Paper** (recommended), **Purpur**, **Spigot**, and their forks/hybrids that expose the Bukkit API.
-- Built against `paper-api` for Minecraft 26.1.2.
+- Built against `paper-api` for Minecraft 26.1.2+.
 
 ## License
 
