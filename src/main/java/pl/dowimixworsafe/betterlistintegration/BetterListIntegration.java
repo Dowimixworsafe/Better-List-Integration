@@ -14,7 +14,8 @@ public final class BetterListIntegration extends JavaPlugin {
         // Register the plugin messaging channels (outgoing/incoming).
         getServer().getMessenger().registerOutgoingPluginChannel(this, "betterlist:sync");
 
-        BetterListPluginMessageListener messageListener = new BetterListPluginMessageListener(partyManager, getLogger());
+        PortableShulkerService shulkers = new PortableShulkerService(this, partyManager);
+        BetterListPluginMessageListener messageListener = new BetterListPluginMessageListener(partyManager, getLogger(), shulkers);
         getServer().getMessenger().registerIncomingPluginChannel(this, "betterlist:sync", messageListener);
 
         // Register Bukkit event listeners.
