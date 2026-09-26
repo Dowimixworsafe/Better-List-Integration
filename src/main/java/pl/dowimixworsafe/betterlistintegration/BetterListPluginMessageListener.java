@@ -19,10 +19,12 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
 
     private final PartyManager partyManager;
     private final Logger logger;
+    private final PortableShulkerService shulkers;
 
-    public BetterListPluginMessageListener(PartyManager partyManager, Logger logger) {
+    public BetterListPluginMessageListener(PartyManager partyManager, Logger logger, PortableShulkerService shulkers) {
         this.partyManager = partyManager;
         this.logger = logger;
+        this.shulkers = shulkers;
     }
 
     @Override
@@ -56,10 +58,16 @@ public class BetterListPluginMessageListener implements PluginMessageListener {
                 JsonObject ack = new JsonObject();
                 ack.addProperty("type", "BML_HELLO_ACK");
                 ack.addProperty("version", "2");
+                ack.addProperty("portableShulkers", true);
                 partyManager.sendPacket(player, "betterlist:sync", ack);
                 return;
             }
 
+            if (type.equals("SHULKER_BIND") || type.equals("SHULKER_SUBSCRIBE")) {
+                shulkers.handle(player, json);
+                return;
+            }
+            if (type.equals("SHULKER_STATE")) return;
             if ("PARTY_TARGET_UPDATE".equalsIgnoreCase(type)) {
                 handleSyncPacket(player, json);
             } else if (type.toUpperCase().startsWith("PARTY_")) {
